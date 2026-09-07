@@ -112,10 +112,19 @@ The query drives from `pp_cost_collector`, never touching `pp_order`. Verified
 against the `pp_order` form: both return 691,747,129.7704 kg and
 ৳34,468,167,212.62 for FY2025, to the last decimal.
 
-**Known limitation.** Because only loose production is counted, the figure is
-feed *manufacturing* cost — about 1.1% below fully-packaged COGS, the difference
-being sacks and bagging overhead (~৳3 crore/month across all groups). This is
-stated on the Feed tab rather than buried here.
+**Known limitations**, both quantified rather than hand-waved:
+
+- Because only loose production is counted, the figure is feed *manufacturing*
+  cost — about 1.1% below fully-packaged COGS, the difference being sacks and
+  bagging overhead (~৳3 crore/month across all groups). This is stated on the
+  Feed tab rather than buried here.
+- A small residual double-count survives the loose filter: some loose orders
+  consume other finished feed as rework (a loose SKU produced 1:1 from another).
+  Measured at 907 receipts / 1,630 t over twelve months, or **~0.3%**. Full
+  quantity-netting — subtracting each product's consumption by other feed orders
+  — was evaluated as an alternative and lands at 55,105,286 kg for August 2026
+  against this project's 55,185,937 kg, a 0.15% difference. The loose filter was
+  kept because it is far cheaper to compute and the gap is immaterial.
 
 #### Feed taxonomy
 
