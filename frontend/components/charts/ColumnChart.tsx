@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 
 import { axisMax, niceTicks } from '@/lib/format'
 import { useMeasure } from '@/lib/useMeasure'
@@ -63,6 +63,7 @@ export function ColumnChart({
   tiltLabels = false,
   emptyMessage = 'No cost recorded for this period.',
 }: Props) {
+  const gid = useId()
   const { ref: measureRef, width } = useMeasure<HTMLDivElement>()
   const wrapRef = useRef<HTMLDivElement>(null)
   const [tip, setTip] = useState<TooltipData | null>(null)
@@ -144,6 +145,17 @@ export function ColumnChart({
           role="img"
           aria-label={`Column chart: ${series.map((s) => s.label).join(', ')}`}
         >
+          <defs>
+            {/* Sheen across the column's WIDTH, not its height — across the
+                height it would shade by magnitude, which is a value ramp in
+                disguise. Anchored to each bar's own box, so every column gets
+                an identical treatment and it reads as material, not data. */}
+            <linearGradient id={`${gid}-sheen`} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#fff" stopOpacity="0.22" />
+              <stop offset="45%" stopColor="#fff" stopOpacity="0.04" />
+              <stop offset="100%" stopColor="#000" stopOpacity="0.1" />
+            </linearGradient>
+          </defs>
           <g transform={`translate(${M.left},${M.top})`}>
             {/* Gridlines — hairline, solid, recessive */}
             {ticks.map((t) => (
@@ -186,6 +198,20 @@ export function ColumnChart({
               shapeRendering="crispEdges"
             />
 
+            {/* The hovered month's band, so the (invisible) hit target visibly
+                responds rather than only the tooltip moving. */}
+            {hovered != null && (
+              <rect
+                x={hovered * band + 2}
+                y={0}
+                width={Math.max(band - 4, 0)}
+                height={innerH}
+                rx={6}
+                fill="var(--bar-track)"
+                style={{ pointerEvents: 'none' }}
+              />
+            )}
+
             {/* Marks — keyed on the data so the entry animation replays on a
                 new period or group, but never on hover. */}
             <g key={dataKey}>
@@ -205,14 +231,16 @@ export function ColumnChart({
                       const y1 = yOf(acc)
                       // The 2px surface gap separates every segment of the stack.
                       const h = Math.max(y0 - y1 - GAP, 0)
+                      const dSeg = barPath(cx - barW / 2, y1, barW, h)
                       return (
-                        <path
+                        <g
                           key={s.key}
                           className="kfg-grow-up"
                           style={{ animationDelay: `${i * 24}ms` }}
-                          d={barPath(cx - barW / 2, y1, barW, h)}
-                          fill={s.color}
-                        />
+                        >
+                          <path d={dSeg} fill={s.color} />
+                          <path d={dSeg} fill={`url(#${gid}-sheen)`} />
+                        </g>
                       )
                     })}
                   </g>
@@ -226,14 +254,16 @@ export function ColumnChart({
                     if (v <= 0) return null
                     const x = cx - groupW / 2 + si * (barW + GAP)
                     const y = yOf(v)
+                    const dCol = barPath(x, y, barW, innerH - y)
                     return (
-                      <path
+                      <g
                         key={s.key}
                         className="kfg-grow-up"
                         style={{ animationDelay: `${i * 24 + si * 8}ms` }}
-                        d={barPath(x, y, barW, innerH - y)}
-                        fill={s.color}
-                      />
+                      >
+                        <path d={dCol} fill={s.color} />
+                        <path d={dCol} fill={`url(#${gid}-sheen)`} />
+                      </g>
                     )
                   })}
                 </g>

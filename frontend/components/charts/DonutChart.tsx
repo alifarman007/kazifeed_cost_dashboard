@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 
 import { Tooltip, type TooltipData } from './Tooltip'
 
@@ -31,6 +31,7 @@ export function DonutChart({
   size?: number
   thickness?: number
 }) {
+  const gid = useId()
   const wrapRef = useRef<HTMLDivElement>(null)
   const [tip, setTip] = useState<TooltipData | null>(null)
   const [hovered, setHovered] = useState<string | null>(null)
@@ -86,6 +87,15 @@ export function DonutChart({
   return (
     <div ref={wrapRef} className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} role="img" aria-label={`${centerLabel}: ${format(total)}`}>
+        <defs>
+          {/* Radial, so the highlight is identical all the way round — a linear
+              sheen would light one side of the ring and read as encoding. */}
+          <radialGradient id={`${gid}-ring`} cx="50%" cy="50%" r="50%">
+            <stop offset={`${((r - thickness) / r) * 100}%`} stopColor="#fff" stopOpacity="0.2" />
+            <stop offset={`${((r - thickness / 2) / r) * 100}%`} stopColor="#fff" stopOpacity="0.03" />
+            <stop offset="100%" stopColor="#000" stopOpacity="0.1" />
+          </radialGradient>
+        </defs>
         <g key={dataKey}>
         {slices.map((d, si) => {
           const share = Math.max(d.value, 0) / total
@@ -95,11 +105,12 @@ export function DonutChart({
           angle = end
           if (sweep <= 0.2) return null
           const g = Math.min(gapDeg, sweep / 3)
+          const dArc = arc(start, Math.max(end - g, start + 0.01))
           return (
+            <g key={d.key}>
             <path
-              key={d.key}
               className="kfg-pop-in"
-              d={arc(start, Math.max(end - g, start + 0.01))}
+              d={dArc}
               fill={d.color}
               opacity={hovered && hovered !== d.key ? 0.45 : 1}
               style={{
@@ -129,6 +140,14 @@ export function DonutChart({
                 setHovered(null)
               }}
             />
+            <path
+              className="kfg-pop-in pointer-events-none"
+              d={dArc}
+              fill={`url(#${gid}-ring)`}
+              style={{ animationDelay: `${si * 70}ms` }}
+              aria-hidden
+            />
+            </g>
           )
         })}
         </g>

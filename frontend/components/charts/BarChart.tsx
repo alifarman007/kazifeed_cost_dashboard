@@ -2,6 +2,8 @@
 
 import { useMemo, useRef, useState } from 'react'
 
+import { useMeasure } from '@/lib/useMeasure'
+
 import { axisMax, niceTicks } from '@/lib/format'
 import { Tooltip, type TooltipData } from './Tooltip'
 
@@ -31,7 +33,15 @@ interface Props {
 }
 
 const BAR_THICKNESS = 22 // <= 24px: the band always keeps some air
-const ROW_HEIGHT = 40
+const ROW_HEIGHT = 44
+const RANK_W = 18
+const GAP = 12
+const VALUE_W = 92
+
+/** Left edge of the plot column, matching the row's grid template. */
+const plotLeft = (labelWidth: number) => RANK_W + GAP + labelWidth + GAP
+/** Right inset of the plot column: the value column plus its gap. */
+const PLOT_RIGHT = VALUE_W + GAP
 
 /**
  * Horizontal bars — the right form when categories are many or long-named
@@ -51,6 +61,7 @@ export function BarChart({
   labelWidth = 208,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null)
+  const { ref: measureRef, width: outerW } = useMeasure<HTMLDivElement>()
   const [tip, setTip] = useState<TooltipData | null>(null)
 
   // Replay the entry animation on new data, never on hover. Declared before the
@@ -69,8 +80,16 @@ export function BarChart({
   }
 
   const dataMax = Math.max(...data.map((d) => d.value), 0)
-  const max = axisMax(dataMax) || 1
-  const ticks = niceTicks(max)
+
+  // Tick density follows the available width. Three legs side by side leave a
+  // narrow plot, and five money labels there collide into "৳0.2 C৳0.4 C…".
+  const plotW = Math.max(outerW - plotLeft(labelWidth) - PLOT_RIGHT, 0)
+  // Never below 2: a count of 1 collapses the axis to a lone "0", which tells
+  // the reader nothing about the scale the bars are drawn against.
+  const tickCount = plotW < 300 ? 2 : plotW < 460 ? 3 : 4
+
+  const max = axisMax(dataMax, tickCount) || 1
+  const ticks = niceTicks(max, tickCount)
   const fullFmt = formatFull ?? format
 
   const show = (e: React.MouseEvent | React.FocusEvent, d: BarDatum, fill: string) => {
@@ -91,12 +110,14 @@ export function BarChart({
 
   return (
     <div ref={wrapRef} className="relative">
-      {/* Plot area: label gutter | track | value */}
+      {/* Width probe for tick density — spans the same box as the rows. */}
+      <div ref={measureRef} className="pointer-events-none absolute inset-x-0 top-0 h-px" aria-hidden />
+      {/* Plot area: rank | label gutter | track | value */}
       <div className="relative">
         {/* Gridlines sit behind the bars, spanning only the track column. */}
         <div
           className="pointer-events-none absolute inset-y-0"
-          style={{ left: labelWidth, right: 84 }}
+          style={{ left: plotLeft(labelWidth), right: PLOT_RIGHT }}
           aria-hidden
         >
           {ticks.map((t) => (
@@ -117,10 +138,20 @@ export function BarChart({
                 key={d.key}
                 className="group grid items-center gap-3"
                 style={{
-                  gridTemplateColumns: `${labelWidth}px 1fr 84px`,
+                  gridTemplateColumns: `${RANK_W}px ${labelWidth}px 1fr ${VALUE_W}px`,
                   height: ROW_HEIGHT,
                 }}
               >
+                {/* Rank — quiet structure, and an anchor for the eye when
+                    several bars are nearly the same length. */}
+                <div
+                  className="tnum text-right text-[11px] tabular-nums transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
+                  aria-hidden
+                >
+                  {i + 1}
+                </div>
+
                 {/* Label gutter */}
                 <div className="min-w-0 pr-1">
                   <div
@@ -144,34 +175,55 @@ export function BarChart({
                 {/* Track — the whole row is the hit target, comfortably > 24px */}
                 <button
                   type="button"
-                  className="relative flex h-full w-full items-center rounded-md text-left transition-colors"
+                  className="group/bar relative flex h-full w-full items-center rounded-md text-left"
                   onMouseMove={(e) => show(e, d, fill)}
                   onMouseLeave={() => setTip(null)}
                   onFocus={(e) => show(e, d, fill)}
                   onBlur={() => setTip(null)}
                   aria-label={`${d.label}: ${fullFmt(d.value)}`}
                 >
+                  {/* The rail the bar is measured along. Without it a 0.03 Cr
+                      bar is a speck floating in white space; with it, every row
+                      reads as a full-width measurement that happens to be short. */}
                   <span
-                    className="kfg-grow-right block"
+                    className="pointer-events-none absolute inset-x-0 transition-colors duration-200 group-hover:[background:var(--bar-track-hover)]"
                     style={{
-                      animationDelay: `${i * 34}ms`,
-                      width: `max(${pct}%, ${d.value > 0 ? '3px' : '0px'})`,
                       height: BAR_THICKNESS,
-                      background: fill,
-                      // Square where it meets the baseline, 4px round at the data end.
-                      borderRadius: '2px 4px 4px 2px',
+                      background: 'var(--bar-track)',
+                      // Same geometry as the bar: square where the axis starts,
+                      // rounded at the far end.
+                      borderRadius: '2px 5px 5px 2px',
                     }}
-                  />
-                  <span
-                    className="pointer-events-none absolute inset-0 rounded-md opacity-0 transition-opacity group-hover:opacity-100"
-                    style={{ background: 'var(--accent-wash)' }}
                     aria-hidden
                   />
+
+                  <span
+                    className="kfg-grow-right relative block overflow-hidden transition-[filter] duration-200 group-hover:brightness-[1.06]"
+                    style={{
+                      animationDelay: `${i * 34}ms`,
+                      width: `max(${pct}%, ${d.value > 0 ? '5px' : '0px'})`,
+                      height: BAR_THICKNESS,
+                      backgroundColor: fill,
+                      // Square where it meets the baseline, 4px round at the data end.
+                      borderRadius: '2px 5px 5px 2px',
+                      // Lift in the bar's own hue — depth without a border, which
+                      // would add data-weight ink that isn't data.
+                      boxShadow: `0 1px 2px color-mix(in srgb, ${fill} 30%, transparent)`,
+                    }}
+                  >
+                    {/* Sheen across the thickness — cosmetic material, never
+                        along the length where it would shade by magnitude. */}
+                    <span
+                      className="absolute inset-0"
+                      style={{ background: 'var(--bar-sheen)' }}
+                      aria-hidden
+                    />
+                  </span>
                 </button>
 
                 {/* Direct label — the relief for sub-3:1 slots, always visible */}
                 <div
-                  className="tnum text-right text-[12px] font-semibold"
+                  className="tnum text-right text-[12.5px] font-semibold tracking-[-0.01em]"
                   style={{ color: 'var(--text-primary)' }}
                 >
                   {format(d.value)}
@@ -185,7 +237,7 @@ export function BarChart({
       {/* Axis */}
       <div
         className="relative mt-1 h-5"
-        style={{ marginLeft: labelWidth, marginRight: 84 }}
+        style={{ marginLeft: plotLeft(labelWidth), marginRight: PLOT_RIGHT }}
         aria-hidden
       >
         <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'var(--baseline)' }} />

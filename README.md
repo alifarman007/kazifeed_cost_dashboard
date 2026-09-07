@@ -267,7 +267,18 @@ Deliberate choices worth knowing:
 - **Money reads in lakh/crore**, the South Asian convention, and feed weight in
   tonnes rather than kilograms.
 - **Colour follows the entity, never its rank**, so filtering to one mill never
-  repaints the survivors.
+  repaints the survivors. The Feed product chart is a *single series*, so every
+  bar shares one hue — shading products by size would double-encode length as
+  colour and burn the only free channel. What carries the visual interest
+  instead is material, not extra hues: a rail each bar is measured along, a
+  sheen across the bar's **thickness** (never along its length, where it would
+  shade by magnitude), a lift in the bar's own hue, and a rank column. Measured
+  on the rendered pixels, the sheen moves the fill from `#2a78d6` to `#327cd6`
+  at the bar's centre and every point still clears 3:1 on the light surface
+  (lightest edge 3.21:1).
+- **Tick density follows the plot width** — three legs side by side leave a
+  narrow plot, and five money labels there collide into `৳0.2 C৳0.4 C…`. Never
+  fewer than two ticks, since a lone `0` says nothing about the scale.
 - Partial months (the running calendar month) are labelled, so a short bar is
   not misread as a collapse in output.
 - **Motion is restrained and informative.** Marks ease in once when the data
