@@ -31,12 +31,11 @@ export function Select({
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full cursor-pointer appearance-none rounded-lg py-2 pl-3 pr-8 text-[13px] font-medium transition-colors"
+          className="w-full cursor-pointer appearance-none rounded-lg py-2 pl-3 pr-8 text-[13px] font-medium shadow-[inset_0_0_0_1px_var(--border-hairline)] transition-shadow duration-200 hover:shadow-[inset_0_0_0_1px_var(--border-strong)]"
           style={{
             minWidth,
             background: 'var(--surface-1)',
             color: 'var(--text-primary)',
-            boxShadow: 'inset 0 0 0 1px var(--border-hairline)',
             border: 'none',
           }}
         >

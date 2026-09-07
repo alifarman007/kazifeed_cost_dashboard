@@ -270,6 +270,13 @@ Deliberate choices worth knowing:
   repaints the survivors.
 - Partial months (the running calendar month) are labelled, so a short bar is
   not misread as a collapse in output.
+- **Motion is restrained and informative.** Marks ease in once when the data
+  changes — columns rise from the baseline they are measured against, bars
+  extend from the axis, lines draw along their own path — so the eye is drawn to
+  the chart rather than entertained by it. Entry animations are keyed to the
+  data, so hovering never replays them, and nothing loops. Every keyframe uses
+  `both` fill mode, so under `prefers-reduced-motion: reduce` marks snap
+  straight to their final state instead of never arriving.
 
 ---
 

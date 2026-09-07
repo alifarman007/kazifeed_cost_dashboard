@@ -53,7 +53,7 @@ export function Tooltip({ data, container }: { data: TooltipData | null; contain
     <div
       ref={ref}
       role="tooltip"
-      className="pointer-events-none absolute z-30 min-w-[168px] max-w-[280px] rounded-xl px-3 py-2.5"
+      className="kfg-fade-in pointer-events-none absolute z-30 min-w-[168px] max-w-[280px] rounded-xl px-3 py-2.5"
       style={{
         left: data.x,
         top: data.y,

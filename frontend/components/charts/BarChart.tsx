@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { axisMax, niceTicks } from '@/lib/format'
 import { Tooltip, type TooltipData } from './Tooltip'
@@ -53,6 +53,10 @@ export function BarChart({
   const wrapRef = useRef<HTMLDivElement>(null)
   const [tip, setTip] = useState<TooltipData | null>(null)
 
+  // Replay the entry animation on new data, never on hover. Declared before the
+  // early return below — hooks must run unconditionally.
+  const dataKey = useMemo(() => data.map((d) => `${d.key}:${d.value}`).join('|'), [data])
+
   if (!data.length) {
     return (
       <div
@@ -104,7 +108,7 @@ export function BarChart({
           ))}
         </div>
 
-        <ul className="relative m-0 list-none p-0">
+        <ul key={dataKey} className="relative m-0 list-none p-0">
           {data.map((d, i) => {
             const fill = colorFor ? colorFor(d, i) : color
             const pct = max > 0 ? (d.value / max) * 100 : 0
@@ -148,8 +152,9 @@ export function BarChart({
                   aria-label={`${d.label}: ${fullFmt(d.value)}`}
                 >
                   <span
-                    className="block transition-[width] duration-500 ease-out"
+                    className="kfg-grow-right block"
                     style={{
+                      animationDelay: `${i * 34}ms`,
                       width: `max(${pct}%, ${d.value > 0 ? '3px' : '0px'})`,
                       height: BAR_THICKNESS,
                       background: fill,

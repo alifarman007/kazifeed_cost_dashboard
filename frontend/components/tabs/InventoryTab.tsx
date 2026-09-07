@@ -55,6 +55,7 @@ export function InventoryTab({ meta, filters }: { meta: Meta; filters: Filters }
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
+          index={0}
           label="Material consumed"
           value={d ? kpiFmt(d.total) : '—'}
           delta={deltaPct}
@@ -63,9 +64,10 @@ export function InventoryTab({ meta, filters }: { meta: Meta; filters: Filters }
           hero
           loading={data.loading}
         />
-        {BUCKETS.map((b) => (
+        {BUCKETS.map((b, i) => (
           <StatTile
             key={b.key}
+            index={i + 1}
             label={b.label}
             value={kpiFmt(buckets.find((x) => x.key === b.key)?.value ?? 0)}
             loading={data.loading}
@@ -91,6 +93,7 @@ export function InventoryTab({ meta, filters }: { meta: Meta; filters: Filters }
 
       <div className="grid gap-4 xl:grid-cols-[1.55fr_1fr]">
         <ChartCard
+          index={0}
           title="Consumption by category"
           subtitle="Raw material, packaging and spare parts"
           meta={period}
@@ -133,6 +136,7 @@ export function InventoryTab({ meta, filters }: { meta: Meta; filters: Filters }
         </ChartCard>
 
         <ChartCard
+          index={1}
           title="Share of consumption"
           meta={period}
           toolbar={
@@ -171,6 +175,7 @@ export function InventoryTab({ meta, filters }: { meta: Meta; filters: Filters }
           Each panel keeps its own scale, and the shared month axis still lets
           the reader compare shapes. */}
       <ChartCard
+        index={2}
         title="Consumption by month"
         subtitle={`Every month of ${filters.year} — each panel on its own scale, so the smaller categories stay readable`}
         meta={filters.mill ? undefined : 'All mills'}

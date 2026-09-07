@@ -130,6 +130,7 @@ export function FeedTab({ meta, filters }: { meta: Meta; filters: Filters }) {
       {/* KPI row */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
+          index={0}
           label="Total feed cost"
           value={s ? kpiFmt(s.total_cost) : '—'}
           delta={deltaPct}
@@ -139,16 +140,19 @@ export function FeedTab({ meta, filters }: { meta: Meta; filters: Filters }) {
           loading={summary.loading}
         />
         <StatTile
+          index={1}
           label="Volume produced"
           value={s ? weight(s.total_qty) : '—'}
           loading={summary.loading}
         />
         <StatTile
+          index={2}
           label="Average unit cost"
           value={s?.avg_rate != null ? rate(s.avg_rate) : '—'}
           loading={summary.loading}
         />
         <StatTile
+          index={3}
           label={`${active?.label ?? 'Group'} this period`}
           value={products.data ? kpiFmt(products.data.total_cost) : '—'}
           trend={trendSeries}
@@ -177,6 +181,7 @@ export function FeedTab({ meta, filters }: { meta: Meta; filters: Filters }) {
 
       {/* Product cost — the main chart */}
       <ChartCard
+        index={0}
         title={`${active?.label ?? 'Feed'} cost by product`}
         subtitle="Loose (bulk) production output, valued at batch cost"
         meta={period}
@@ -219,6 +224,7 @@ export function FeedTab({ meta, filters }: { meta: Meta; filters: Filters }) {
           line, and it deserves its own chart rather than a second scale. */}
       <div className="grid gap-4 xl:grid-cols-2">
         <ChartCard
+          index={1}
           title={`${active?.label ?? 'Feed'} cost by month`}
           subtitle={`Every month of ${filters.year}`}
           meta={filters.mill ? undefined : 'All mills'}
@@ -250,6 +256,7 @@ export function FeedTab({ meta, filters }: { meta: Meta; filters: Filters }) {
         </ChartCard>
 
         <ChartCard
+          index={2}
           title={`${active?.label ?? 'Feed'} volume by month`}
           subtitle="Tonnage produced — what drives the cost line"
           meta={filters.mill ? undefined : 'All mills'}
@@ -283,6 +290,7 @@ export function FeedTab({ meta, filters }: { meta: Meta; filters: Filters }) {
       {/* Unit cost gets its own card and a zoomed axis — on a zero baseline a
           0.3 % spread renders as a dead-flat line. */}
       <ChartCard
+        index={3}
         title={`${active?.label ?? 'Feed'} unit cost by month`}
         subtitle="Cost per kilogram of feed produced"
         meta={`${filters.year}`}
@@ -310,6 +318,7 @@ export function FeedTab({ meta, filters }: { meta: Meta; filters: Filters }) {
 
       {/* Group comparison */}
       <ChartCard
+        index={4}
         title="Cost across feed groups"
         subtitle="Every feed category produced in this period"
         meta={period}

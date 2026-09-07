@@ -108,14 +108,16 @@ export function LogisticsTab({ meta, filters }: { meta: Meta; filters: Filters }
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
+          index={0}
           label="Total logistics cost"
           value={d ? kpiFmt(d.grand_total) : '—'}
           hero
           loading={data.loading}
         />
-        {LEGS.map((l) => (
+        {LEGS.map((l, i) => (
           <StatTile
             key={l.key}
+            index={i + 1}
             label={l.title}
             value={d ? kpiFmt(d[l.key].total) : '—'}
             loading={data.loading}
@@ -140,9 +142,10 @@ export function LogisticsTab({ meta, filters }: { meta: Meta; filters: Filters }
       )}
 
       <div className="grid gap-4 xl:grid-cols-3">
-        {LEGS.map((l) => (
+        {LEGS.map((l, i) => (
           <ChartCard
             key={l.key}
+            index={i}
             title={l.title}
             subtitle={l.subtitle}
             meta={period}
@@ -171,6 +174,7 @@ export function LogisticsTab({ meta, filters }: { meta: Meta; filters: Filters }
       </div>
 
       <ChartCard
+        index={3}
         title="Logistics cost by month"
         subtitle={`Every month of ${filters.year}`}
         meta={filters.mill ? undefined : 'All mills'}

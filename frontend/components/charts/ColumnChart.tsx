@@ -99,6 +99,12 @@ export function ColumnChart({
   const yOf = (v: number) => innerH - (v / max) * innerH
   const peakIndex = totals.indexOf(Math.max(...totals))
 
+  // Replay the entry animation when the data changes, never on hover.
+  const dataKey = useMemo(
+    () => series.map((sr) => `${sr.key}:${sr.values.join(',')}`).join('|'),
+    [series]
+  )
+
   const showTip = (i: number, clientX: number) => {
     const box = wrapRef.current?.getBoundingClientRect()
     if (!box) return
@@ -180,7 +186,9 @@ export function ColumnChart({
               shapeRendering="crispEdges"
             />
 
-            {/* Marks */}
+            {/* Marks — keyed on the data so the entry animation replays on a
+                new period or group, but never on hover. */}
+            <g key={dataKey}>
             {categories.map((cat, i) => {
               const cx = i * band + band / 2
               const dim = hovered != null && hovered !== i
@@ -200,6 +208,8 @@ export function ColumnChart({
                       return (
                         <path
                           key={s.key}
+                          className="kfg-grow-up"
+                          style={{ animationDelay: `${i * 24}ms` }}
                           d={barPath(cx - barW / 2, y1, barW, h)}
                           fill={s.color}
                         />
@@ -219,6 +229,8 @@ export function ColumnChart({
                     return (
                       <path
                         key={s.key}
+                        className="kfg-grow-up"
+                        style={{ animationDelay: `${i * 24 + si * 8}ms` }}
                         d={barPath(x, y, barW, innerH - y)}
                         fill={s.color}
                       />
@@ -228,13 +240,16 @@ export function ColumnChart({
               )
             })}
 
+            </g>
+
             {/* One sparing direct label: the peak */}
             {labelPeak && peakIndex >= 0 && totals[peakIndex] > 0 && (
               <text
                 x={peakIndex * band + band / 2}
                 y={yOf(totals[peakIndex]) - 8}
                 textAnchor="middle"
-                className="tnum"
+                className="tnum kfg-fade-in"
+                style={{ animationDelay: `${peakIndex * 24 + 380}ms` }}
                 fontSize={11}
                 fontWeight={600}
                 fill="var(--text-primary)"

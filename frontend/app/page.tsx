@@ -55,7 +55,8 @@ export default function Page() {
 
             <MainTabs items={DOMAINS} value={domain} onChange={setDomain} />
 
-            <div className="pt-1">
+            {/* Keyed on the domain so switching tabs replays the entry. */}
+            <div key={domain} className="kfg-fade-up pt-1">
               {domain === 'feed' && <FeedTab meta={meta.data} filters={filters} />}
               {domain === 'logistics' && <LogisticsTab meta={meta.data} filters={filters} />}
               {domain === 'inventory' && <InventoryTab meta={meta.data} filters={filters} />}

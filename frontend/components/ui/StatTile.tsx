@@ -13,6 +13,8 @@ interface Props {
   trend?: (number | null)[]
   hero?: boolean
   loading?: boolean
+  /** Stagger index across the KPI row. */
+  index?: number
 }
 
 /**
@@ -30,6 +32,7 @@ export function StatTile({
   trend,
   hero = false,
   loading = false,
+  index = 0,
 }: Props) {
   const hasDelta = delta != null && Number.isFinite(delta)
   const rising = hasDelta && (delta as number) > 0
@@ -43,7 +46,10 @@ export function StatTile({
       : 'var(--status-critical)'
 
   return (
-    <div className="card flex flex-col gap-2 px-4 py-3.5">
+    <div
+      className="card kfg-fade-up flex flex-col gap-2 px-4 py-3.5"
+      style={{ animationDelay: `${Math.min(index, 5) * 55}ms` }}
+    >
       <span
         className="text-[11.5px] font-medium uppercase leading-tight tracking-[0.055em]"
         style={{ color: 'var(--text-muted)' }}

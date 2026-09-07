@@ -15,6 +15,8 @@ interface Props {
   className?: string
   /** Holds the previous render at reduced opacity instead of flashing a skeleton. */
   refetching?: boolean
+  /** Stagger index, so a column of cards arrives in reading order. */
+  index?: number
 }
 
 export function ChartCard({
@@ -26,12 +28,18 @@ export function ChartCard({
   table,
   className = '',
   refetching = false,
+  index = 0,
 }: Props) {
   const [view, setView] = useState<'chart' | 'table'>('chart')
   const id = useId()
 
   return (
-    <section className={`card flex flex-col overflow-hidden ${className}`}>
+    // The fade-up runs on mount only — i.e. when a tab is opened. Changing a
+    // filter re-renders in place, so only the marks re-animate, not the frame.
+    <section
+      className={`card kfg-fade-up flex flex-col overflow-hidden ${className}`}
+      style={{ animationDelay: `${Math.min(index, 6) * 45}ms` }}
+    >
       <header className="flex flex-wrap items-start justify-between gap-3 px-5 pb-3 pt-4">
         <div className="min-w-0">
           <h3

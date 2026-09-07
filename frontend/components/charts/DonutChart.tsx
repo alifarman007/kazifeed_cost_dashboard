@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { Tooltip, type TooltipData } from './Tooltip'
 
@@ -34,6 +34,12 @@ export function DonutChart({
   const wrapRef = useRef<HTMLDivElement>(null)
   const [tip, setTip] = useState<TooltipData | null>(null)
   const [hovered, setHovered] = useState<string | null>(null)
+
+  // Declared before the early return below — hooks must run unconditionally.
+  const dataKey = useMemo(
+    () => slices.map((d) => `${d.key}:${d.value}`).join('|'),
+    [slices]
+  )
 
   const total = slices.reduce((s, d) => s + Math.max(d.value, 0), 0)
   if (total <= 0) {
@@ -80,7 +86,8 @@ export function DonutChart({
   return (
     <div ref={wrapRef} className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} role="img" aria-label={`${centerLabel}: ${format(total)}`}>
-        {slices.map((d) => {
+        <g key={dataKey}>
+        {slices.map((d, si) => {
           const share = Math.max(d.value, 0) / total
           const sweep = share * 360
           const start = angle
@@ -91,10 +98,15 @@ export function DonutChart({
           return (
             <path
               key={d.key}
+              className="kfg-pop-in"
               d={arc(start, Math.max(end - g, start + 0.01))}
               fill={d.color}
               opacity={hovered && hovered !== d.key ? 0.45 : 1}
-              style={{ transition: 'opacity 140ms', cursor: 'pointer' }}
+              style={{
+                transition: 'opacity 140ms',
+                cursor: 'pointer',
+                animationDelay: `${si * 70}ms`,
+              }}
               tabIndex={0}
               role="button"
               aria-label={`${d.label}: ${format(d.value)}, ${((share * 100) || 0).toFixed(1)} percent`}
@@ -119,9 +131,13 @@ export function DonutChart({
             />
           )
         })}
+        </g>
       </svg>
 
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+      <div
+        className="kfg-fade-in pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
+        style={{ animationDelay: `${slices.length * 70 + 120}ms` }}
+      >
         <span className="text-[10.5px] uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>
           {centerLabel}
         </span>

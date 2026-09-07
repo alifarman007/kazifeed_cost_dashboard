@@ -40,8 +40,11 @@ export function MainTabs({
             {it.label}
             <span
               aria-hidden
-              className="absolute inset-x-2 bottom-[-1px] h-[2px] rounded-full transition-opacity"
-              style={{ background: 'var(--accent)', opacity: active ? 1 : 0 }}
+              className="absolute bottom-[-1px] left-2 right-2 h-[2px] origin-left rounded-full transition-transform duration-200 ease-out"
+              style={{
+                background: 'var(--accent)',
+                transform: active ? 'scaleX(1)' : 'scaleX(0)',
+              }}
             />
           </button>
         )
@@ -73,7 +76,7 @@ export function PillTabs({
             aria-selected={active}
             onClick={() => onChange(it.key)}
             title={it.empty ? `${it.label}: nothing produced in this period` : undefined}
-            className="flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-all"
+            className="flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-all duration-200 hover:-translate-y-px"
             style={
               active
                 ? {

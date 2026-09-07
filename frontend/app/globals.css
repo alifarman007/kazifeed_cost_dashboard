@@ -226,6 +226,17 @@ body {
     border: 1px solid var(--border-hairline);
     border-radius: 14px;
     box-shadow: var(--shadow-card);
+    transition:
+      box-shadow 200ms ease,
+      border-color 200ms ease;
+  }
+
+  /* A whisper of elevation on hover — the card lifts, the data never moves. */
+  .card:hover {
+    box-shadow:
+      var(--shadow-card),
+      0 2px 10px -4px rgba(11, 11, 11, 0.08);
+    border-color: var(--border-strong);
   }
 
   /* Columns of numbers must align; standalone figures must not. */
@@ -238,6 +249,94 @@ body {
 .is-refetching {
   opacity: 0.45;
   transition: opacity 160ms ease;
+}
+
+/* ==========================================================================
+   Motion
+
+   Restrained on purpose. Marks ease in once when the data changes, so the eye
+   is drawn to the chart rather than entertained by it; nothing loops, nothing
+   moves on hover except the thing under the pointer. The whole block is
+   neutralised by the reduced-motion rule at the end of this file.
+
+   Every entry animation uses `both` fill mode, so with motion reduced the mark
+   snaps straight to its final state instead of never arriving.
+   ========================================================================== */
+
+/* A single decelerating curve everywhere, so the whole UI moves as one system. */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Columns rise from the baseline they are measured against. */
+@keyframes kfg-grow-up {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+/* Horizontal bars extend from the axis, matching how they are read. */
+@keyframes kfg-grow-right {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes kfg-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes kfg-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Line charts draw along their own path — needs pathLength="1" on the path. */
+@keyframes kfg-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes kfg-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+}
+
+.kfg-grow-up {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: kfg-grow-up 480ms var(--ease-out) both;
+}
+
+.kfg-grow-right {
+  transform-origin: left center;
+  animation: kfg-grow-right 460ms var(--ease-out) both;
+}
+
+.kfg-fade-up {
+  animation: kfg-fade-up 340ms var(--ease-out) both;
+}
+
+.kfg-fade-in {
+  animation: kfg-fade-in 220ms ease-out both;
+}
+
+.kfg-draw {
+  stroke-dasharray: 1;
+  animation: kfg-draw 760ms var(--ease-out) both;
+}
+
+.kfg-pop-in {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: kfg-pop-in 300ms var(--ease-out) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -40,10 +40,13 @@ export function Sparkline({
 
   return (
     <svg width={width} height={height} className={className} aria-hidden focusable="false">
-      <path d={d.trim()} fill="none" stroke="var(--series-mute)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={d.trim()} fill="none" stroke="var(--series-mute)" strokeWidth={2}
+            strokeLinecap="round" strokeLinejoin="round" pathLength={1} className="kfg-draw" />
       {/* Current period in the accent, with a surface ring so it stays legible */}
-      <circle cx={xOf(lastIdx)} cy={yOf(lastVal)} r={4} fill="var(--surface-1)" />
-      <circle cx={xOf(lastIdx)} cy={yOf(lastVal)} r={2.6} fill="var(--series-1)" />
+      <g className="kfg-pop-in" style={{ animationDelay: '620ms' }}>
+        <circle cx={xOf(lastIdx)} cy={yOf(lastVal)} r={4} fill="var(--surface-1)" />
+        <circle cx={xOf(lastIdx)} cy={yOf(lastVal)} r={2.6} fill="var(--series-1)" />
+      </g>
     </svg>
   )
 }

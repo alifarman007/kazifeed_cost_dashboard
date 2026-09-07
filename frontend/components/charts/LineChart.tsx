@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { useMeasure } from '@/lib/useMeasure'
 import { Tooltip, type TooltipData } from './Tooltip'
@@ -41,6 +41,12 @@ export function LineChart({
   const wrapRef = useRef<HTMLDivElement>(null)
   const [tip, setTip] = useState<TooltipData | null>(null)
   const [hovered, setHovered] = useState<number | null>(null)
+
+  // Declared before the early return below — hooks must run unconditionally.
+  const dataKey = useMemo(
+    () => series.map((sr) => `${sr.key}:${sr.values.join(',')}`).join('|'),
+    [series]
+  )
 
   const all = series.flatMap((s) => s.values).filter((v): v is number => v != null)
   if (!all.length) {
@@ -101,6 +107,7 @@ export function LineChart({
               </g>
             ))}
 
+            <g key={dataKey}>
             {series.map((s) => {
               let d = ''
               let started = false
@@ -113,8 +120,11 @@ export function LineChart({
                 started = true
               })
               return (
+                // pathLength normalises the dash length so one keyframe draws
+                // any path, whatever its real length.
                 <path key={s.key} d={d.trim()} fill="none" stroke={s.color} strokeWidth={2}
-                      strokeLinecap="round" strokeLinejoin="round" />
+                      strokeLinecap="round" strokeLinejoin="round"
+                      pathLength={1} className="kfg-draw" />
               )
             })}
 
@@ -124,12 +134,15 @@ export function LineChart({
               if (idx == null || idx < 0) return null
               const v = s.values[idx] as number
               return (
-                <g key={`end-${s.key}`}>
+                // The end marker lands once the line has finished drawing.
+                <g key={`end-${s.key}`} className="kfg-pop-in" style={{ animationDelay: '640ms' }}>
                   <circle cx={xOf(idx)} cy={yOf(v)} r={5.5} fill="var(--surface-1)" />
                   <circle cx={xOf(idx)} cy={yOf(v)} r={3.5} fill={s.color} />
                 </g>
               )
             })}
+
+            </g>
 
             {/* Crosshair — readers aim at a month, never at a 2px line */}
             {hovered != null && (
