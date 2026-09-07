@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "postgres-kfg": {
+      "type": "stdio",
+      "command": "/home/alif/.local/bin/postgres-mcp",
+      "args": [
+        "--access-mode=restricted"
+      ],
+      "env": {
+        "DATABASE_URI": "postgresql://USER:PASSWORD@172.16.253.172:5555/kfg_idempiere"
+      }
+    }
+  }
+}

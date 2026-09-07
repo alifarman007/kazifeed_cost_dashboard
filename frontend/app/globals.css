@@ -1,0 +1,251 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Kazifeed Cost Dashboard — design tokens
+
+   Data colours are the validated categorical palette (see dataviz skill:
+   worst adjacent CVD ΔE 9.1 light / 8.4 dark, normal-vision floor 19.6 / 19.3).
+   Every dark value is a step chosen for the dark surface, never an auto-flip.
+   Three light slots sit below 3:1 on the surface, so every chart ships visible
+   direct labels AND a table view — the documented relief.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Surfaces & ink */
+  --page-plane: #f7f7f4;
+  --surface-1: #fcfcfb;
+  --surface-2: #f2f2ee;
+  --surface-sunken: #efeee9;
+
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+
+  --gridline: #e1e0d9;
+  --baseline: #c3c2b7;
+  --border-hairline: rgba(11, 11, 11, 0.1);
+  --border-strong: rgba(11, 11, 11, 0.16);
+
+  /* Categorical data slots — fixed order, never cycled */
+  --series-1: #2a78d6; /* blue    */
+  --series-2: #eb6834; /* orange  */
+  --series-3: #1baf7a; /* aqua    */
+  --series-4: #eda100; /* yellow  */
+  --series-5: #e87ba4; /* magenta */
+  --series-6: #008300; /* green   */
+  --series-7: #4a3aa7; /* violet  */
+  --series-8: #e34948; /* red     */
+
+  /* De-emphasis hue, for the "rest" in an emphasis chart */
+  --series-mute: #c8c7bf;
+
+  /* Sequential blue ramp (magnitude only, never on nominal categories) */
+  --seq-100: #cde2fb;
+  --seq-250: #86b6ef;
+  --seq-400: #3987e5;
+  --seq-450: #2a78d6;
+  --seq-550: #1c5cab;
+  --seq-700: #0d366b;
+
+  /* Status — reserved, never a series colour */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+  --delta-up-good: #006300;
+
+  /* Chrome accent for interactive UI (not a data colour) */
+  --accent: #1c5cab;
+  --accent-wash: rgba(42, 120, 214, 0.08);
+  --accent-ring: rgba(42, 120, 214, 0.35);
+
+  --shadow-card: 0 1px 2px rgba(11, 11, 11, 0.04),
+    0 4px 16px -6px rgba(11, 11, 11, 0.08);
+  --shadow-pop: 0 4px 12px rgba(11, 11, 11, 0.1),
+    0 16px 40px -12px rgba(11, 11, 11, 0.18);
+}
+
+/* Dark values are declared under BOTH scopes so the toggle wins either way. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+
+    --page-plane: #0d0d0d;
+    --surface-1: #1a1a19;
+    --surface-2: #232322;
+    --surface-sunken: #131312;
+
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+
+    --gridline: #2c2c2a;
+    --baseline: #383835;
+    --border-hairline: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(255, 255, 255, 0.16);
+
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+
+    --series-mute: #4a4a46;
+
+    --seq-100: #0d366b;
+    --seq-250: #184f95;
+    --seq-400: #2a78d6;
+    --seq-450: #3987e5;
+    --seq-550: #6da7ec;
+    --seq-700: #cde2fb;
+
+    --delta-up-good: #0ca30c;
+
+    --accent: #6da7ec;
+    --accent-wash: rgba(57, 135, 229, 0.14);
+    --accent-ring: rgba(57, 135, 229, 0.45);
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4),
+      0 4px 16px -6px rgba(0, 0, 0, 0.5);
+    --shadow-pop: 0 4px 12px rgba(0, 0, 0, 0.5),
+      0 16px 40px -12px rgba(0, 0, 0, 0.7);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --page-plane: #0d0d0d;
+  --surface-1: #1a1a19;
+  --surface-2: #232322;
+  --surface-sunken: #131312;
+
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+
+  --gridline: #2c2c2a;
+  --baseline: #383835;
+  --border-hairline: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+
+  --series-mute: #4a4a46;
+
+  --seq-100: #0d366b;
+  --seq-250: #184f95;
+  --seq-400: #2a78d6;
+  --seq-450: #3987e5;
+  --seq-550: #6da7ec;
+  --seq-700: #cde2fb;
+
+  --delta-up-good: #0ca30c;
+
+  --accent: #6da7ec;
+  --accent-wash: rgba(57, 135, 229, 0.14);
+  --accent-ring: rgba(57, 135, 229, 0.45);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px -6px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 4px 12px rgba(0, 0, 0, 0.5), 0 16px 40px -12px rgba(0, 0, 0, 0.7);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--page-plane);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04";
+}
+
+::selection {
+  background: var(--accent-wash);
+}
+
+/* Focus ring — consistent everywhere, never removed */
+:where(a, button, select, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Scrollbars that match the chrome instead of fighting it */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--baseline) transparent;
+}
+*::-webkit-scrollbar {
+  height: 9px;
+  width: 9px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--baseline);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+  background-clip: content-box;
+}
+
+@layer components {
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border-hairline);
+    border-radius: 14px;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Columns of numbers must align; standalone figures must not. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Refetch holds the previous render — no skeleton flash, no layout jump. */
+.is-refetching {
+  opacity: 0.45;
+  transition: opacity 160ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

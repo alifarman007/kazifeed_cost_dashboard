@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kazifeed Cost Dashboard</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: Inter, Arial, sans-serif;
+    background: #f5f7fa;
+    color: #1f2937;
+  }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    margin: 0 0 5px;
+    font-size: 26px;
+  }
+
+  .header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  .filter-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .filter {
+    border: 1px solid #d7dce2;
+    background: #fff;
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    color: #374151;
+    min-width: 120px;
+    outline: none;
+  }
+
+  .main-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid #dfe3e8;
+    margin-bottom: 22px;
+  }
+
+  .main-tab {
+    border: 0;
+    background: transparent;
+    padding: 12px 22px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+  }
+
+  .main-tab.active {
+    color: #111827;
+    border-bottom-color: #2563eb;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .sub-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .sub-tab {
+    border: 1px solid #d7dce2;
+    background: #fff;
+    color: #4b5563;
+    padding: 8px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .sub-tab.active {
+    background: #eef4ff;
+    border-color: #9bb8ef;
+    color: #1d4ed8;
+  }
+
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 4px 0 14px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e3e7ec;
+    border-radius: 10px;
+    padding: 18px;
+  }
+
+  .chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .chart-header h3 {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .period-label {
+    color: #6b7280;
+    font-size: 13px;
+  }
+
+  .chart-area {
+    position: relative;
+    height: 360px;
+    overflow-x: auto;
+  }
+
+  .bar-chart {
+    display: grid;
+    align-items: end;
+    gap: 22px;
+    height: 320px;
+    min-width: 620px;
+    padding: 16px 16px 0;
+    border-left: 1px solid #dfe3e8;
+    border-bottom: 1px solid #dfe3e8;
+    background:
+      linear-gradient(to bottom, transparent 24.8%, #eef1f4 25%, transparent 25.2%),
+      linear-gradient(to bottom, transparent 49.8%, #eef1f4 50%, transparent 50.2%),
+      linear-gradient(to bottom, transparent 74.8%, #eef1f4 75%, transparent 75.2%);
+  }
+
+  .bar-col {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bar-value {
+    font-size: 11px;
+    color: #4b5563;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .bar {
+    width: min(58px, 78%);
+    background: #3b82f6;
+    border-radius: 6px 6px 0 0;
+    min-height: 7px;
+    transition: height .2s ease;
+  }
+
+  .bar-label {
+    font-size: 11px;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+
+  .logistics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .horizontal-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 0 4px;
+  }
+
+  .h-row {
+    display: grid;
+    grid-template-columns: 95px 1fr 62px;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .h-row strong {
+    text-align: right;
+    font-size: 12px;
+  }
+
+  .h-track {
+    height: 18px;
+    background: #eef1f4;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .h-bar {
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 4px;
+  }
+
+  .cost-total {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 2px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .donut-wrap {
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .donut {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: conic-gradient(
+      #3b82f6 0deg 229deg,
+      #60a5fa 229deg 354deg,
+      #93c5fd 354deg 360deg
+    );
+    position: relative;
+    margin: auto;
+  }
+
+  .donut::after {
+    content: "";
+    position: absolute;
+    inset: 48px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  .legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .legend-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    font-size: 13px;
+  }
+
+  .legend-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3b82f6;
+  }
+
+  .dot.d2 { background: #60a5fa; }
+  .dot.d3 { background: #93c5fd; }
+
+  .inventory-chart {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: end;
+    gap: 50px;
+    height: 330px;
+    min-width: 580px;
+    padding: 20px 40px 0;
+    border-left: 1px solid #dfe3e8;
+    border-bottom: 1px solid #dfe3e8;
+    background:
+      linear-gradient(to bottom, transparent 24.8%, #eef1f4 25%, transparent 25.2%),
+      linear-gradient(to bottom, transparent 49.8%, #eef1f4 50%, transparent 50.2%),
+      linear-gradient(to bottom, transparent 74.8%, #eef1f4 75%, transparent 75.2%);
+  }
+
+  .inventory-bar-col {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .inventory-bar {
+    width: min(90px, 70%);
+    min-height: 10px;
+    background: #3b82f6;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .inventory-value {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .inventory-label {
+    color: #6b7280;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .yearly-note {
+    margin-top: 10px;
+    color: #6b7280;
+    font-size: 12px;
+  }
+
+  @media (max-width: 800px) {
+    .page { padding: 18px; }
+    .logistics-grid { grid-template-columns: 1fr; }
+    .donut-wrap { grid-template-columns: 1fr; }
+    .filter-row { justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>Kazifeed Cost Dashboard</h1>
+    <p>Cost overview by month and year</p>
+  </div>
+
+  <div class="filter-row">
+    <select id="yearFilter" class="filter">
+      <option value="2026">2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+    </select>
+
+    <select id="monthFilter" class="filter">
+      <option value="all">All Year</option>
+      <option value="0">January</option>
+      <option value="1">February</option>
+      <option value="2">March</option>
+      <option value="3">April</option>
+      <option value="4">May</option>
+      <option value="5">June</option>
+      <option value="6">July</option>
+      <option value="7" selected>August</option>
+      <option value="8">September</option>
+      <option value="9">October</option>
+      <option value="10">November</option>
+      <option value="11">December</option>
+    </select>
+  </div>
+
+  <div class="main-tabs">
+    <button class="main-tab active" data-target="feed">Feed Cost</button>
+    <button class="main-tab" data-target="logistics">Logistics</button>
+    <button class="main-tab" data-target="inventory">Inventory</button>
+  </div>
+
+  <!-- FEED COST -->
+  <section id="feed" class="panel active">
+    <div class="sub-tabs">
+      <button class="sub-tab active" data-feed="layer">Layer</button>
+      <button class="sub-tab" data-feed="boiler">Boiler</button>
+      <button class="sub-tab" data-feed="cattle">Cattle</button>
+      <button class="sub-tab" data-feed="fish">Fish</button>
+    </div>
+
+    <div class="section-title" id="feed-title">Layer Feed Cost</div>
+
+    <div class="card">
+      <div class="chart-header">
+        <h3 id="feed-chart-title">Product Category Cost</h3>
+        <div class="period-label" id="feed-period">August 2026</div>
+      </div>
+
+      <div class="chart-area">
+        <div class="bar-chart" id="feed-chart"></div>
+      </div>
+
+      <div class="yearly-note">All Year shows monthly total feed cost.</div>
+    </div>
+  </section>
+
+  <!-- LOGISTICS -->
+  <section id="logistics" class="panel">
+    <div class="section-title">Logistics Cost</div>
+
+    <div class="logistics-grid">
+      <div class="card">
+        <div class="chart-header">
+          <h3>Inbound</h3>
+          <div class="period-label" id="inbound-period">August 2026</div>
+        </div>
+
+        <div class="horizontal-chart" id="inbound-chart"></div>
+        <div class="cost-total">
+          <span>Total Inbound</span>
+          <span id="inbound-total">৳ 757,000</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="chart-header">
+          <h3>Outbound</h3>
+          <div class="period-label" id="outbound-period">August 2026</div>
+        </div>
+
+        <div class="horizontal-chart" id="outbound-chart"></div>
+        <div class="cost-total">
+          <span>Total Outbound</span>
+          <span id="outbound-total">৳ 412,000</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chart-header">
+        <h3>Inbound vs Outbound</h3>
+        <div class="period-label" id="logistics-overview-period">August 2026</div>
+      </div>
+      <div class="chart-area">
+        <div class="bar-chart" id="logistics-overview-chart"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INVENTORY -->
+  <section id="inventory" class="panel">
+    <div class="section-title">Inventory Cost</div>
+
+    <div class="card" style="margin-bottom:18px;">
+      <div class="chart-header">
+        <h3>Total Inventory Cost by Category</h3>
+        <div class="period-label" id="inventory-period">August 2026</div>
+      </div>
+
+      <div class="chart-area">
+        <div class="inventory-chart" id="inventory-chart"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chart-header">
+        <h3>Inventory Cost Share</h3>
+        <div class="period-label" id="inventory-share-period">August 2026</div>
+      </div>
+
+      <div class="donut-wrap">
+        <div class="donut" id="inventory-donut"></div>
+        <div class="legend" id="inventory-legend"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const months = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
+
+  const feedProducts = {
+    layer: ["Starter","Grower","Layer-1","Layer-2","Layer-3"],
+    boiler: ["Starter","Grower","Finisher","Boiler Mix","Special"],
+    cattle: ["Calf","Grower","Beef","Dairy","Special"],
+    fish: ["Nursery","Starter","Grower","Finisher","Floating"]
+  };
+
+  const feedBase = {
+    layer: [820,690,910,760,640],
+    boiler: [560,610,740,680,520],
+    cattle: [430,520,710,620,480],
+    fish: [390,540,650,720,610]
+  };
+
+  const feedYearTotals = {
+    layer: [3560,3720,3810,4020,4170,4290,4360,3820,4410,4520,4680,4790],
+    boiler: [3010,3120,3200,3290,3410,3500,3640,3110,3690,3780,3890,4010],
+    cattle: [2690,2810,2950,3020,3170,3250,3310,2760,3400,3490,3570,3690],
+    fish:  [2410,2520,2600,2710,2840,2910,2990,2760,3080,3170,3290,3410]
+  };
+
+  const logisticsMonthly = {
+    inbound: {
+      transport: [380,395,402,410,415,425,432,420,438,445,450,463],
+      loading:   [72,75,77,79,81,84,86,85,88,90,92,95],
+      unloading: [54,56,58,59,60,61,63,62,64,66,68,70],
+      duty:      [160,170,175,181,185,188,192,190,198,202,208,214]
+    },
+    outbound: {
+      transport: [275,282,290,298,302,308,315,310,321,328,335,341],
+      loading:   [48,50,51,53,54,56,57,58,59,61,63,65],
+      unloading: [37,39,40,41,42,43,45,44,46,47,49,51],
+      duty:      [0,0,0,0,0,0,0,0,0,0,0,0]
+    }
+  };
+
+  const inventoryMonthly = {
+    raw:     [7.52,7.66,7.84,7.95,8.06,8.18,8.31,8.42,8.55,8.67,8.81,8.96],
+    packing: [1.84,1.89,1.94,1.98,2.02,2.08,2.12,2.18,2.23,2.28,2.33,2.40],
+    spare:   [0.81,0.85,0.88,0.91,0.95,0.98,1.02,1.06,1.09,1.12,1.16,1.20]
+  };
+
+  const feedNames = {
+    layer: "Layer Feed Cost",
+    boiler: "Boiler Feed Cost",
+    cattle: "Cattle Feed Cost",
+    fish: "Fish Feed Cost"
+  };
+
+  let currentFeed = "layer";
+
+  const yearFilter = document.getElementById("yearFilter");
+  const monthFilter = document.getElementById("monthFilter");
+
+  function selectedPeriod() {
+    const month = monthFilter.value;
+    const year = yearFilter.value;
+    return month === "all"
+      ? `All Year ${year}`
+      : `${months[Number(month)]} ${year}`;
+  }
+
+  function moneyK(v) {
+    return `৳ ${v}K`;
+  }
+
+  function money(v) {
+    return `৳ ${Math.round(v * 1000).toLocaleString()}`;
+  }
+
+  function renderFeed() {
+    document.getElementById("feed-title").textContent = feedNames[currentFeed];
+
+    const month = monthFilter.value;
+    const year = yearFilter.value;
+    const chart = document.getElementById("feed-chart");
+    chart.innerHTML = "";
+
+    if (month === "all") {
+      const values = feedYearTotals[currentFeed];
+      chart.style.gridTemplateColumns = `repeat(12, minmax(52px, 1fr))`;
+
+      const max = Math.max(...values);
+      values.forEach((value, i) => {
+        const col = document.createElement("div");
+        col.className = "bar-col";
+
+        const valueEl = document.createElement("div");
+        valueEl.className = "bar-value";
+        valueEl.textContent = `${value}K`;
+
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = `${Math.max((value / max) * 82, 4)}%`;
+
+        const label = document.createElement("div");
+        label.className = "bar-label";
+        label.textContent = months[i].slice(0,3);
+
+        col.append(valueEl, bar, label);
+        chart.appendChild(col);
+      });
+
+      document.getElementById("feed-chart-title").textContent = "Monthly Total Feed Cost";
+      document.getElementById("feed-period").textContent = `All Year ${year}`;
+    } else {
+      const base = feedBase[currentFeed];
+      const multiplier = [1.00,0.98,1.02,1.04,1.01,1.05,1.03,1.00,1.06,1.08,1.10,1.12][Number(month)];
+      const values = base.map(v => Math.round(v * multiplier));
+      const max = Math.max(...values);
+
+      chart.style.gridTemplateColumns = `repeat(5, 1fr)`;
+
+      feedProducts[currentFeed].forEach((label, i) => {
+        const col = document.createElement("div");
+        col.className = "bar-col";
+
+        const valueEl = document.createElement("div");
+        valueEl.className = "bar-value";
+        valueEl.textContent = moneyK(values[i]);
+
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = `${Math.max((values[i] / max) * 82, 4)}%`;
+
+        const labelEl = document.createElement("div");
+        labelEl.className = "bar-label";
+        labelEl.textContent = label;
+
+        col.append(valueEl, bar, labelEl);
+        chart.appendChild(col);
+      });
+
+      document.getElementById("feed-chart-title").textContent = "Product Category Cost";
+      document.getElementById("feed-period").textContent = selectedPeriod();
+    }
+  }
+
+  function renderLogistics() {
+    const month = monthFilter.value;
+    const year = yearFilter.value;
+
+    const inChart = document.getElementById("inbound-chart");
+    const outChart = document.getElementById("outbound-chart");
+    const overview = document.getElementById("logistics-overview-chart");
+
+    const categories = [
+      ["Transport", "transport"],
+      ["Loading", "loading"],
+      ["Unloading", "unloading"],
+      ["Custom Duty", "duty"]
+    ];
+
+    function makeRows(target, side) {
+      target.innerHTML = "";
+
+      const values = {};
+      categories.forEach(([label, key]) => {
+        values[key] = month === "all"
+          ? Math.round(logisticsMonthly[side][key].reduce((a,b) => a+b, 0) / 12)
+          : logisticsMonthly[side][key][Number(month)];
+      });
+
+      const max = Math.max(...Object.values(values), 1);
+
+      categories.forEach(([label, key]) => {
+        const row = document.createElement("div");
+        row.className = "h-row";
+
+        const name = document.createElement("span");
+        name.textContent = label;
+
+        const track = document.createElement("div");
+        track.className = "h-track";
+
+        const bar = document.createElement("div");
+        bar.className = "h-bar";
+        bar.style.width = `${(values[key] / max) * 100}%`;
+
+        const value = document.createElement("strong");
+        value.textContent = moneyK(values[key]);
+
+        track.appendChild(bar);
+        row.append(name, track, value);
+        target.appendChild(row);
+      });
+
+      return Object.values(values).reduce((a,b) => a+b, 0);
+    }
+
+    const inboundTotal = makeRows(inChart, "inbound");
+    const outboundTotal = makeRows(outChart, "outbound");
+
+    document.getElementById("inbound-total").textContent = money(inboundTotal);
+    document.getElementById("outbound-total").textContent = money(outboundTotal);
+
+    document.getElementById("inbound-period").textContent = selectedPeriod();
+    document.getElementById("outbound-period").textContent = selectedPeriod();
+
+    overview.innerHTML = "";
+
+    if (month === "all") {
+      overview.style.gridTemplateColumns = "repeat(12, minmax(52px, 1fr))";
+      const totalsIn = months.map((_,i) =>
+        logisticsMonthly.inbound.transport[i] +
+        logisticsMonthly.inbound.loading[i] +
+        logisticsMonthly.inbound.unloading[i] +
+        logisticsMonthly.inbound.duty[i]
+      );
+      const totalsOut = months.map((_,i) =>
+        logisticsMonthly.outbound.transport[i] +
+        logisticsMonthly.outbound.loading[i] +
+        logisticsMonthly.outbound.unloading[i] +
+        logisticsMonthly.outbound.duty[i]
+      );
+      const max = Math.max(...totalsIn, ...totalsOut);
+
+      months.forEach((m,i) => {
+        const col = document.createElement("div");
+        col.className = "bar-col";
+
+        const value = document.createElement("div");
+        value.className = "bar-value";
+        value.textContent = `${Math.round(totalsIn[i])}K`;
+
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = `${Math.max((totalsIn[i]/max)*82,4)}%`;
+
+        const label = document.createElement("div");
+        label.className = "bar-label";
+        label.textContent = m.slice(0,3);
+
+        col.append(value,bar,label);
+        overview.appendChild(col);
+      });
+
+      document.getElementById("logistics-overview-period").textContent = `All Year ${year}`;
+    } else {
+      overview.style.gridTemplateColumns = "repeat(2, 1fr)";
+      const bars = [
+        ["Inbound", inboundTotal],
+        ["Outbound", outboundTotal]
+      ];
+      const max = Math.max(...bars.map(x=>x[1]),1);
+
+      bars.forEach(([labelText, val]) => {
+        const col = document.createElement("div");
+        col.className = "bar-col";
+        const value = document.createElement("div");
+        value.className = "bar-value";
+        value.textContent = moneyK(val);
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = `${Math.max((val/max)*82,4)}%`;
+        const label = document.createElement("div");
+        label.className = "bar-label";
+        label.textContent = labelText;
+        col.append(value,bar,label);
+        overview.appendChild(col);
+      });
+
+      document.getElementById("logistics-overview-period").textContent = selectedPeriod();
+    }
+  }
+
+  function renderInventory() {
+    const month = monthFilter.value;
+    const year = yearFilter.value;
+    const chart = document.getElementById("inventory-chart");
+
+    const raw = month === "all"
+      ? inventoryMonthly.raw.reduce((a,b)=>a+b,0) / 12
+      : inventoryMonthly.raw[Number(month)];
+    const packing = month === "all"
+      ? inventoryMonthly.packing.reduce((a,b)=>a+b,0) / 12
+      : inventoryMonthly.packing[Number(month)];
+    const spare = month === "all"
+      ? inventoryMonthly.spare.reduce((a,b)=>a+b,0) / 12
+      : inventoryMonthly.spare[Number(month)];
+
+    const labels = [
+      ["Raw Materials", raw],
+      ["Packaging Material", packing],
+      ["Spare Part", spare]
+    ];
+
+    chart.innerHTML = "";
+    chart.style.gridTemplateColumns = "repeat(3, 1fr)";
+    const max = Math.max(...labels.map(x=>x[1]));
+
+    labels.forEach(([labelText, value]) => {
+      const col = document.createElement("div");
+      col.className = "inventory-bar-col";
+
+      const valueEl = document.createElement("div");
+      valueEl.className = "inventory-value";
+      valueEl.textContent = `৳${value.toFixed(2)}M`;
+
+      const bar = document.createElement("div");
+      bar.className = "inventory-bar";
+      bar.style.height = `${Math.max((value/max)*82,5)}%`;
+
+      const label = document.createElement("div");
+      label.className = "inventory-label";
+      label.textContent = labelText;
+
+      col.append(valueEl,bar,label);
+      chart.appendChild(col);
+    });
+
+    document.getElementById("inventory-period").textContent = selectedPeriod();
+    document.getElementById("inventory-share-period").textContent = selectedPeriod();
+
+    const total = raw + packing + spare;
+    const rawDeg = raw / total * 360;
+    const packDeg = packing / total * 360;
+
+    document.getElementById("inventory-donut").style.background =
+      `conic-gradient(#3b82f6 0deg ${rawDeg}deg, #60a5fa ${rawDeg}deg ${rawDeg+packDeg}deg, #93c5fd ${rawDeg+packDeg}deg 360deg)`;
+
+    const legend = document.getElementById("inventory-legend");
+    legend.innerHTML = "";
+    [
+      ["Raw Materials", raw, "dot"],
+      ["Packaging Material", packing, "dot d2"],
+      ["Spare Part", spare, "dot d3"]
+    ].forEach(([label, val, cls]) => {
+      const row = document.createElement("div");
+      row.className = "legend-row";
+
+      const left = document.createElement("div");
+      left.className = "legend-label";
+
+      const dot = document.createElement("span");
+      dot.className = cls;
+
+      const text = document.createElement("span");
+      text.textContent = label;
+
+      const value = document.createElement("strong");
+      value.textContent = `${((val/total)*100).toFixed(1)}%`;
+
+      left.append(dot,text);
+      row.append(left,value);
+      legend.appendChild(row);
+    });
+  }
+
+  document.querySelectorAll(".main-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".main-tab").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.target).classList.add("active");
+    });
+  });
+
+  document.querySelectorAll(".sub-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".sub-tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentFeed = btn.dataset.feed;
+      renderFeed();
+    });
+  });
+
+  yearFilter.addEventListener("change", () => {
+    renderFeed();
+    renderLogistics();
+    renderInventory();
+  });
+
+  monthFilter.addEventListener("change", () => {
+    renderFeed();
+    renderLogistics();
+    renderInventory();
+  });
+
+  renderFeed();
+  renderLogistics();
+  renderInventory();
+</script>
+</body>
+</html>
