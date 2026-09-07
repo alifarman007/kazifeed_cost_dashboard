@@ -31,3 +31,7 @@ backend/data/
 
 # Local MCP config — contains the ERP password. Copy .mcp.json.example and fill it in.
 .mcp.json
+
+# Next.js build artifacts
+frontend/tsconfig.tsbuildinfo
+frontend/next-env.d.ts
